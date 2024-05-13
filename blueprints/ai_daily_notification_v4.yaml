@@ -1,6 +1,6 @@
 blueprint:
   name: AI Daily Notification v4
-  source_url: https://raw.githubusercontent.com/marcnl/homeassistant/main/blueprints/ai_daily_notification_v4.yaml
+  source_url: https://github.com/marcnl/homeassistant/blob/main/blueprints/ai_daily_notification_v4.yaml
   description: "# AI Daily Notification\n **Version:
     4.0**\n\n Conversation agent generates a notification based on the upcoming calendar items,
     location and weather.\n\n - Don't forget to check the *Conversation
