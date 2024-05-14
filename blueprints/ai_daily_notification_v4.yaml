@@ -1,12 +1,11 @@
 blueprint:
   name: AI Daily Notification v4
-  source_url: https://github.com/marcnl/homeassistant/blob/main/blueprints/ai_daily_notification_v4.yaml
-  description: "# AI Daily Notification\n **Version:
-    4.0**\n\n Conversation agent generates a notification based on the upcoming calendar items,
-    location and weather.\n\n - Don't forget to check the *Conversation
-    agent prompt* and the end and update it if needed.\n\n - Adjust the maximum tokens
-    to return in the OpenAI integration if needed.\n\n - If you need to send notifications to
-    multiple receivers, use notify.group.\n\n"
+  source_url: https://github.com/fixtse/blueprints/blob/main/multiple_notify_agent_calendar_agenda.yaml
+  description: "# AI Daily Notification\n **Version: 4.1**\n\n
+    Conversation agent generates a notification based on the upcoming calendar items, location and weather.\n\n
+    - Don't forget to check the *Conversation agent prompt* and the end and update it if needed.\n\n
+    - Adjust the maximum tokens to return in the OpenAI integration if needed.\n\n
+    - If you need to send notifications to multiple receivers, use notify.group.\n\n"
   author: molski
   domain: automation
   input:
@@ -14,30 +13,30 @@ blueprint:
       name: Day of the week to use the automation
       description: Day of the week to run the automation
       default:
-      - mon
-      - tue
-      - wed
-      - thu
-      - fri
-      - sat
-      - sun
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
       selector:
         select:
           options:
-          - label: Monday
-            value: mon
-          - label: Tuesday
-            value: tue
-          - label: Wednesday
-            value: wed
-          - label: Thursday
-            value: thu
-          - label: Friday
-            value: fri
-          - label: Saturday
-            value: sat
-          - label: Sunday
-            value: sun
+            - label: Monday
+              value: mon
+            - label: Tuesday
+              value: tue
+            - label: Wednesday
+              value: wed
+            - label: Thursday
+              value: thu
+            - label: Friday
+              value: fri
+            - label: Saturday
+              value: sat
+            - label: Sunday
+              value: sun
           custom_value: false
           multiple: true
     notify_time:
@@ -106,7 +105,7 @@ blueprint:
         text:
           multiple: false
           multiline: false
-      default: notify.alert_echo_show_mancave
+      default: notify.alert_echo_show_mancave2
     notify_service_2:
       name: Second Notify service name
       description: The name of the second notify service where the notification should be sent.
@@ -131,18 +130,15 @@ blueprint:
           type: text
           multiple: false
       default:
-        "Please generate text for a notification that will be sent to the users
-        smartphone with helpful information.\n\nYou are a helpful personal agent that
-        generates text for the user:\n- Your answers are helpful, friendly, warm,
-        insightful.\n- Your answers are not technical, and do not include Home Assistant
-        internal details such as entities in responses.\n- Your messages help the
-        user prepare for their day, for example:\n  - The calendar belongs to one person,
-        provide an overview, and make special remarks if some events match in time and
-        the title or description makes a mention between calendars\n  - Making note
-        of unusual weather for the location and time of year (but not mundane details
-        like \"0% chance of precipitation\")\n  - How much time remaining until their
-        first meeting\n  - Anything that may be special or unique, such as celebrating
-        a birthday"
+        "Please generate text for a notification that will be sent to the users smartphone with helpful information.\n\n
+        You are a helpful personal agent that generates text for the user:\n
+        - Your answers are helpful, friendly, warm, insightful.\n
+        - Your answers are not technical, and do not include Home Assistant internal details such as entities in responses.\n
+        - Your messages help the user prepare for their day, for example:\n
+        - The calendar belongs to one person, provide an overview, and make special remarks if some events match in time and the title or description makes a mention between calendars\n
+        - Making note of unusual weather for the location and time of year (but not mundane details like \"0% chance of precipitation\")\n
+        - How much time remaining until their first meeting\n  
+        - Anything that may be special or unique, such as celebrating a birthday"
 trigger:
   platform: time
   at: !input notify_time
@@ -168,25 +164,35 @@ action:
       - alias: Conversation Agent Notification Text
         service: conversation.process
         data:
-          text: 
-            "Time: {{ now() }}\n{%- if zone_entity is defined %}\nLatitude: {{ state_attr(zone_entity,
-            'latitude') | round(1) }}\nLongitude: {{ state_attr(zone_entity, 'longitude')
-            | round(1) }}\n{% endif %}\n\n
+          text: "Time: {{ now() }}\n
+            {%- if zone_entity is defined %}\n
+            Latitude: {{ state_attr(zone_entity, 'latitude') | round(1) }}\n
+            Longitude: {{ state_attr(zone_entity, 'longitude') | round(1) }}\n
+            {% endif %}\n\n
             {%- if weather_entity is defined %}
             {% for state in states.weather -%}
-              {%- if loop.first %}The {% elif loop.last %} and the {% else %}, the {% endif -%}
-              {{ state.name | lower }} is {{state.state_with_unit}}
+            {%- if loop.first %}The {% elif loop.last %} and the {% else %}, the {% endif -%}
+            {{ state.name | lower }} is {{state.state_with_unit}}
             {%- endfor %} and the temperature is {{ state_attr(weather_entity, 'temperature') }}
-            {%- endif %}
-            \n\n\nCalendar \"{{ state_attr(calendar_entity, 'friendly_name') }}\"
-            events for the next {{ calendar_duration.hours }} hours:\n{%- if agenda_1[calendar_entity].events
-            %}\n  {%- for event in agenda_1[calendar_entity].events %}\n  - Summary: {{ event.summary }}\n
-            \   Start-End: {% if event.start is defined %}{{ as_timestamp(event.start) |
-            timestamp_custom(\"%c\") }} to {{ as_timestamp(event.end) | timestamp_custom(\"%c\")
-            }}{% else %}All Day{% endif %}\n    {%- if event.description is defined %}\n
-            \   Description: {{ event.description }}\n    {% endif -%}\n    {%- if event.location
-            is defined %}\n      Location: {{ event.location }}\n    {% endif -%}\n  {%-
-            endfor %}\n{%- else %}\n  - No upcoming events.\n{%- endif %}\n\n{{ prompt }}"
+            {%- endif %}\n\n\n
+            Calendar \"{{ state_attr(calendar_entity, 'friendly_name') }}\" events for the next {{ calendar_duration.hours }} hours:\n{%- if agenda_1[calendar_entity].events %}\n
+            {%- for event in agenda_1[calendar_entity].events %}\n
+            - Summary: {{ event.summary }}\n
+            Start-End: {% if event.start is defined %}{{ as_timestamp(event.start) | timestamp_custom(\"%c\") }} to {{ as_timestamp(event.end) | timestamp_custom(\"%c\") }}
+            {% else %}
+            All Day
+            {% endif %}\n
+            {%- if event.description is defined %}\n
+            Description: {{ event.description }}\n
+            {% endif -%}\n
+            {%- if event.location is defined %}\n
+            Location: {{ event.location }}\n
+            {% endif -%}\n
+            {%- endfor %}\n
+            {%- else %}\n
+            - No upcoming events.\n
+            {%- endif %}\n\n
+            {{ prompt }}"
           agent_id: !input conversation_agent
         response_variable: agent
       - alias: Send notification to notify_service_1
@@ -195,8 +201,7 @@ action:
           message: "{{ agent.response.speech.plain.speech }}"
       - if:
           - condition: template
-            value_template: "{{ (notify_number != 'one')
-              }}"
+            value_template: "{{ (notify_number != 'one') }}"
         then:
           - alias: Send notification to notify_service_2
             service: !input notify_service_2
